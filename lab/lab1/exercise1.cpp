@@ -1,8 +1,10 @@
 #include <iostream>
 #include <cmath>
 #include <stdlib.h>
+#include <iomanip>
 using namespace std;
 
+const double PI  =3.14159;
 /*x^2 + y^2 = r^2*/
 double circleEquaution(double x, double y){
 	return sqrt(pow(x, 2) + pow(y, 2));
@@ -23,7 +25,7 @@ bool in_circle(double& x, double&y){
 }
 double estimate_pi(const int & n){
 	double x, y;
-	int counter = 0;
+	double counter = 0;
 	for (int i = 0; i < n; i++){
 		 x = (rand() % 10000 + 1) / 10000.0;
          y = (rand() % 10000 + 1) / 10000.0;
@@ -31,11 +33,24 @@ double estimate_pi(const int & n){
          	++counter;
          }
 	}
-	return (counter / N) * 4;
+	return (counter / n) * 4.0;
+}
+void print(){
+	int n[8] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
+	cout << "N 			Estimate 			Difference" << endl;
+	double x, estimate;
+	for (int i = 0; i < 8; i++){
+		x = estimate_pi(n[i]);
+		estimate = abs(PI - x);
+		cout << n[i] << "		 	" << x << "					"<<estimate<<endl;
+
+	}
+
 }
 int main(){
 	srand(time(NULL));
-	estimate_pi(1);
+	print();
 
 	return 0;
 }
+
