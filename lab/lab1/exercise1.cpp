@@ -70,9 +70,10 @@ double* pi_sequence(const int &n){
 
 }
 
-void printCSV(double *a){
-	ofstream myfile;
-    myfile.open("test.csv");
+void printCSV(double *a, int i){
+	fstream myfile;
+    myfile.open ("test.txt", std::fstream::in | std::fstream::out | std::fstream::app);
+    myfile << "Seq " << i << endl;
     for(int i = 0; i < 500; i++){
     	myfile << *(a + i) << endl;
     }
@@ -83,9 +84,8 @@ int main(){
 	//print();
 	double * x;
 	for(int i = 0; i < 6; i++){
-		cout << i << endl;
 		x = pi_sequence(500);
-		printCSV(x);
+		printCSV(x , i);
 	}
 
 	return 0;
