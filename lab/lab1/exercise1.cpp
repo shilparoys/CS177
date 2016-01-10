@@ -21,14 +21,23 @@ bool in_circle(double& x, double&y){
 	}
 
 }
+double estimate_pi(const int & n){
+	double x, y;
+	int counter = 0;
+	for (int i = 0; i < n; i++){
+		 x = (rand() % 10000 + 1) / 10000.0;
+         y = (rand() % 10000 + 1) / 10000.0;
+
+	}
+}
 int main(){
 	srand(time(NULL));
 	double x, y;
-	x = (rand() % 10000 + 1)/10000;
-	y = (rand() % 10000 + 1)/10000;
+	x = rand() % 10 + 1;
+	y = rand() % 10 + 1;
 	cout << x << " " << y << endl;
 	if(in_circle(x,y)){
-		cout << "Trune\n";
+		cout << "True\n";
 	}
 	else{
 		cout << "False\n";
