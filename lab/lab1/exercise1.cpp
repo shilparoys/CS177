@@ -2,6 +2,7 @@
 #include <cmath>
 #include <stdlib.h>
 #include <iomanip>
+#include <fstream>
 using namespace std;
 
 const double PI  =3.14159;
@@ -48,14 +49,44 @@ void print(){
 }
 
 double* pi_sequence(const int &n){
+	/*double a[500];
+	double x, y;
+	int counter = 0;
 	for(int i = 0; i < 500; i++){
-		x = (rand() % 10000 + 1) / 10000.0;
-        y = (rand() % 10000 + 1) / 10000.0;
-	}
+		for(int j = 0; j < i; j++){
+			x = estimate_pi(j);
+			//a[counter++] = x;
+
+    	}
+	}*/
+    static double a[500];
+    int counter =0;
+    double x;
+    for(int i = 0; i < 500; i++){
+    	x = estimate_pi(i);
+    	a[counter++] = x;
+    }
+    return a;
+
+}
+
+void printCSV(double *a){
+	ofstream myfile;
+    myfile.open("test.csv");
+    for(int i = 0; i < 500; i++){
+    	myfile << *(a + i) << endl;
+    }
+    myfile.close();
 }
 int main(){
 	srand(time(NULL));
-	print();
+	//print();
+	double * x;
+	for(int i = 0; i < 6; i++){
+		cout << i << endl;
+		x = pi_sequence(500);
+		printCSV(x);
+	}
 
 	return 0;
 }
