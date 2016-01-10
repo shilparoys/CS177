@@ -27,21 +27,15 @@ double estimate_pi(const int & n){
 	for (int i = 0; i < n; i++){
 		 x = (rand() % 10000 + 1) / 10000.0;
          y = (rand() % 10000 + 1) / 10000.0;
-
+         if(in_circle(x,y)){
+         	++counter;
+         }
 	}
+	return (counter / N) * 4;
 }
 int main(){
 	srand(time(NULL));
-	double x, y;
-	x = rand() % 10 + 1;
-	y = rand() % 10 + 1;
-	cout << x << " " << y << endl;
-	if(in_circle(x,y)){
-		cout << "True\n";
-	}
-	else{
-		cout << "False\n";
-	}
+	estimate_pi(1);
 
 	return 0;
 }
