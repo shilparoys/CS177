@@ -45,7 +45,13 @@ void print(){
 		cout << n[i] << "		 	" << x << "					"<<estimate<<endl;
 
 	}
+}
 
+double* pi_sequence(const int &n){
+	for(int i = 0; i < 500; i++){
+		x = (rand() % 10000 + 1) / 10000.0;
+        y = (rand() % 10000 + 1) / 10000.0;
+	}
 }
 int main(){
 	srand(time(NULL));
