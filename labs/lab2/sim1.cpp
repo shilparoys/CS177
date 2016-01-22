@@ -410,7 +410,7 @@ void carQueueClass::insert (carClass * newestCar)
 		q2.push(newestCar);
 	}
 	if(q2.size() > maxQueueSize){
-		++maxQueueSize;
+		maxQueueSize = q2.size();
 	}
 }
 
