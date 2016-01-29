@@ -4,7 +4,7 @@ CSIM    = /usr/csshare/pkgs/csim_cpp-19.0/lib/csim.cpp.a
 RM      = /bin/rm -f
 CFLAG   = -DCPP -DGPP -g
  
-INPUT = part1.csim.c
+INPUT = hertz2.csim.c
 TARGET = csim
   
 $(TARGET): $(INPUT)

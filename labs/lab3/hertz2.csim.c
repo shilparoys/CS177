@@ -18,19 +18,22 @@ int customersServed = 0;
 double TotalLitresSold = 0.0;
 double TotalWaitingTime = 0.0;
 double TotalServiceTime = 0.0;
-int numPumps;
+int numPumpsRegular;
+int numPumpsDiesel;
 double ReportInterval, endingTime;
 bool needDiesel; //yes 1 no 0
 double maxPumpDieselQLength =0.0;
 double maxPumpQLength = 0.0;
 
 facility_ms * pumpMachine;
-facility * pumpDiesel;
+facility_ms * pumpDiesel;
 
 //function declaration
 void departures();
 void dep_cust();
 void printStatus();
+
+//determine how long the service will take
 double serviceTime(double litres){
     double howLong = -6;
     for (int i = 21; i <= 12; i++){
@@ -38,7 +41,9 @@ double serviceTime(double litres){
     }
     return 150 + 0.5 * litres + 30 * howLong;
 }
-bool doesCarBalk (double litres, double  queueLength){
+
+//determine whether the car balks or not
+bool DoesCarBalk (double litres, double  queueLength){
     return queueLength > 0 && uniform(0, balkingStream) > (40 + litres) / (25 * (3+ queueLength));
 }
 
@@ -46,15 +51,20 @@ extern "C" void sim()		// main process
 {
 	create("sim");
 
+    //getting user input 
     scanf("%lf", &ReportInterval);
     scanf("%lf", &endingTime);
+    printf("Enter num of regular pumps " );
+    scanf("%d", &numPumpsRegular);
+    printf("\nEnter num of diesel pumps ");
+    scanf("%d", &numPumpsDiesel);
+    pumpMachine = new facility_ms("pumpMachine", numPumpsRegular);
+    pumpDiesel = new facility_ms("pumpDiesel", numPumpsDiesel);
 
-    scanf("%d", &numPumps);
-    pumpMachine = new facility_ms("pumpMachine", numPumps);
-    pumpDiesel = new facility("pumpDiesel");
-
-    printf("The simiulation run uses %d", numPumps);
+    printf("The simiulation run uses (in total) %d", numPumpsDiesel + numPumpsRegular);
     printf(" pumps and the following random number seeds:\n");
+    
+    //seed info
     scanf("%d", &arrivalStream);
     scanf("%d", &litreStream);
     scanf("%d", &balkingStream);
@@ -65,9 +75,8 @@ extern "C" void sim()		// main process
     printf("\nBalkingStream is %d", balkingStream);
     printf("\nServiceStream is %d", serviceStream);
     printf("\n");
-
-	departures();
-		
+	
+    //print out table
     printf ("%9s%7s%8s%9s%8s%7s%9s%7s%8s%7s%7s\n", " Current", "Total ",
                 "NoQueue", "Car->Car", "Average", "Number", "Average", "Pump ",
                 "Total", " Lost ", "Max");
@@ -76,7 +85,9 @@ extern "C" void sim()		// main process
                 "Usage ", "Profit", "Profit", "Size");
     for (int i = 0; i < 87; i++)
          printf( "-");
-    printf("\n");
+    printf("\n"); 
+
+	departures();
     printStatus();
     hold(endingTime + ReportInterval);
 }
@@ -97,25 +108,40 @@ void departures()
 void dep_cust()
 {
 	create("dept_car");
+    
+    //count total number of car arriving 
     totalArrival++;
+     double arrTime = simulationTime;
+
     double pumpQLength = pumpMachine->qlength();
     double pumpDieselQLength = pumpDiesel->qlength();
-    
     double simulationTime = clock;
-    double litresNeeded = 10 + uniform(0, litreStream) * 50;
     
+    //determines amount litre of gas required by gas
+    double litresNeeded = 10 + uniform(0, litreStream) * 50;
+
+    //determines whether car requires regular of diesel 
     double  B = uniform(0, 10);
-    if (B <= 0.5){
+    if (B <= 0.05){
         needDiesel = 1; //diesel
     }
     else{
         needDiesel = 0; //regular
     }
-    double arrTime = simulationTime;
-    if( !doesCarBalk(litresNeeded, pumpQLength)){
+    
+    
+    if( DoesCarBalk(litresNeeded, pumpQLength)){
+         //car leaves
+        balkingCustomers ++;
+        TotalLitresMissed += litresNeeded; 
+     }
+    else{
+         //car decides it is worth it to stay in line
         if(pumpQLength == 0 && pumpDieselQLength == 0){
             totalEmptyQueueTime += simulationTime;
         }
+        //diesel needs to go here
+        //regular can go here if line is shorter than other 
         if(needDiesel || (pumpDieselQLength < pumpQLength)){
             pumpDiesel->reserve();
             pumpDieselQLength = pumpDiesel->qlength();
@@ -124,75 +150,64 @@ void dep_cust()
             }
             hold(uniform(0, serviceStream));
             pumpDiesel -> release();
-            if(pumpQLength == 0 && pumpDieselQLength == 0){
-                totalEmptyQueueTime -= simulationTime;
-            }
         }
         else{
+            //regular gas
             pumpMachine ->reserve();
             pumpQLength = pumpMachine->qlength();
             if(pumpQLength > maxPumpQLength){
                 maxPumpQLength = pumpQLength;
             }
-            for(int i = 0; i < numPumps; ++i){
-                if(pumpMachine[i].status() != BUSY){
-                    pumpMachine[i].status() == BUSY;
-                    hold(uniform(0, serviceStream));
-                    pumpMachine->release();
-                    if(pumpQLength == 0 && pumpDieselQLength == 0){
-                         totalEmptyQueueTime -= simulationTime;
-                    }
-                    pumpMachine[i].status() == FREE;
-                    break;
-
-                }
-            }
+            hold(uniform(0, serviceStream));
+            pumpMachine->release();
+            
+        }
+        if(pumpQLength == 0 && pumpDieselQLength == 0){
+                totalEmptyQueueTime -= simulationTime;
         }
         double waitTime = clock - arrTime;
         TotalLitresSold += litresNeeded;
         customersServed++;
         TotalWaitingTime += waitTime;
         TotalServiceTime += serviceTime(litresNeeded);
-    }
-    else{
-        balkingCustomers ++;
-        TotalLitresMissed += litresNeeded;
+
     }
 }
 
+//prints report info
+//reused status() function pretty much from last lab
 void printStatus(){
     create("stats");
     while(clock <= endingTime){
         hold(ReportInterval);
+        
         double simulationTime = clock; 
-        double maxSize = 0.0;
+        double maxSize = maxPumpQLength;;
         if(maxPumpQLength < maxPumpDieselQLength){
             maxSize = maxPumpDieselQLength;
         }
         else{   
             maxSize = maxPumpQLength;
         }
-         printf("%8.0f%7i", simulationTime, totalArrival);
-         printf("%8.3f",  totalEmptyQueueTime/simulationTime);
-         if(totalArrival > 0){
+        
+        printf("%8.0f%7i", simulationTime, totalArrival);
+        printf("%8.3f",  totalEmptyQueueTime/simulationTime);
+        if(totalArrival > 0){
             printf("%9.3f%8.3f", simulationTime/totalArrival,
             (TotalLitresSold + TotalLitresMissed) / totalArrival);
-         }
+        }
         else{
             printf ("%9s%8s", "Unknown", "Unknown");
         }
         printf ("%7i", balkingCustomers);
-         if (customersServed > 0)
+        if (customersServed > 0)
             printf ("%9.3f", TotalWaitingTime / customersServed);
         else
             printf ("%9s", "Unknown");
-        printf ("%7.3f", TotalServiceTime/ (numPumps * simulationTime));
-        printf ("%9.2f", TotalLitresSold * profit- cost * numPumps);
-        printf ("%7.2f", TotalLitresMissed * profit);
+        printf ("%7.3f", TotalServiceTime/ ((numPumpsRegular + numPumpsDiesel) * simulationTime));
+        printf ("%8.2f", TotalLitresSold * profit- cost * (numPumpsRegular + numPumpsDiesel));
+        printf (" %7.2f", TotalLitresMissed * profit);
         printf("%5i\n", maxSize);
-
-
     }
-
 }
 
