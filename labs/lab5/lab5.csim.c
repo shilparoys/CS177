@@ -22,7 +22,7 @@ double sampleVarOnce(double *U);
 extern "C" void sim()		// main process
 {
     //Step One
-    printf("Step One Results\n");
+    printf("Step One,Two, and Three Results\n");
     for(int i = 0; i < ROW; i++){
         for(int j = 0; j < COLUMN; j++){
             U[i][j] = uniform(0,1);
