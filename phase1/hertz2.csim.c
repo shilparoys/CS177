@@ -1,7 +1,12 @@
 // Shilpa Chirackel & 861060176
 
+#include <iostream>
 #include "cpp.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sstream>
+using namespace std;
 
 #define TINY 1.e-20
 #define CellNum 120
@@ -9,9 +14,11 @@
 //variable declarations
 facility_set * road;
 double *D;              //contains departure times
-
+static int driverNum = 0;
+string driverId = "car";
 //function declarations
-void createCar();
+void createTraffic();
+void addCar(int startingCell);
 
 extern "C" void sim()		// main process
 {
@@ -22,12 +29,17 @@ extern "C" void sim()		// main process
     for(int i = 0; i < CellNum; i++){
         D[i] = 0.0;
     }
-    createCar();        //start a stream of cars
+    createTraffic();    //start a stream of traffic
     hold(1440);         //wait for a whole day (in minutes) to pass
     report();
 }
 
-void createCar(){
-    create("createCar");
+void createTraffic(){
+    create("createTraffic");
+    addCar(1);          //placing car at position 1 because a stopped car takes 2 cells
+}
+
+void addCar(int startingCell){
+    create("addCar");
 }
 
