@@ -41,6 +41,8 @@ struct Car{
         cout << "carId: " << carId << "\thead: " << head << "\t tail:" << tail << endl;
         cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl << endl;
     }
+    void addCarToTraffic(){
+    }
 };
 
 //variable declarations
@@ -60,6 +62,7 @@ extern "C" void sim()		// main process
     for(int i = 0; i < numCars; i++){
         carObj.push_back(c);
         carObj.at(i).createCar(i);
+        carObj.at(i).addCarToTraffic();
     }    
     hold(TotalTime);         //wait for a whole day (in minutes) to pass
     //print out snapshot
