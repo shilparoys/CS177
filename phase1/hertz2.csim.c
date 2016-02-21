@@ -15,6 +15,9 @@ using namespace std;
 #define TotalTime 1440
 #define CarLength 2
 
+facility_set * road;
+int numCars = 0;        //number of cars in simulation
+
 //struct for car class
 /*car object will contain information such as 
 id, head, tail, holdtme, etc for each object*/
@@ -41,15 +44,41 @@ struct Car{
         cout << "carId: " << carId << "\thead: " << head << "\t tail:" << tail << endl;
         cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl << endl;
     }
-    void addCarToTraffic(){
-    }
+    void addCarToTraffic(int index);
+    double calculateHoldTime(int index);    
 };
 
-//variable declarations
-facility_set * road;
-int numCars = 0;        //number of cars in simulation
 vector<Car> carObj;
+void Car::addCarToTraffic(int index){
+    create("addCarToTraffic");
+    //non-moving car is added to traffic, so it should reserve 2 cells for head and tail
+    (*road)[carObj.at(index).head].reserve();
+    (*road)[carObj.at(index).tail].reserve();
+    //calculate hold time for the car for given speed
+    carObj.at(index).hold_time = calculateHoldTime(index);   
+}
 
+double Car::calculateHoldTime(int index){
+    if(carObj.at(index).speed == 0){
+        return 0;
+    }
+    else if(carObj.at(index).speed == 1){
+        return (3.0/CarLength);
+    }
+    else if(carObj.at(index).speed == 2){
+        return ((11.0/6)/CarLength);
+    }
+    else if(carObj.at(index).speed == 3){
+        return (1.0/CarLength);
+    }
+    else if(carObj.at(index).speed == 4){
+        return ((2.0/3.0)/CarLength);
+    }
+    else{
+        return (.5 / CarLength);
+    }
+}
+    
 extern "C" void sim()		// main process
 {
 	create("sim");
@@ -62,7 +91,7 @@ extern "C" void sim()		// main process
     for(int i = 0; i < numCars; i++){
         carObj.push_back(c);
         carObj.at(i).createCar(i);
-        carObj.at(i).addCarToTraffic();
+        carObj.at(i).addCarToTraffic(i);
     }    
     hold(TotalTime);         //wait for a whole day (in minutes) to pass
     //print out snapshot
