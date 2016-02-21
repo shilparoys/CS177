@@ -51,6 +51,7 @@ struct Car{
     //function declaration
     void addCarToTraffic(int index);
     double calculateHoldTime(int index);    
+    int calculateLookahead(int index);
 };
 
 vector<Car> carObj;
@@ -63,9 +64,10 @@ void Car::addCarToTraffic(int index){
     (*road)[carObj.at(index).tail].reserve();
     
     while(clock < TotalTime){
-        cout << "Trying to move car " << index << endl;
+        //cout << "Trying to move car " << index << endl;
         //calculate hold time for the car for given speed
         carObj.at(index).hold_time = calculateHoldTime(index);   
+        int lookAhead = calculateLookahead(index);
         //we are going to make the car move
         //sequences: release the head, reserve head +1, release the tail, reserve tail + 1
         (*road)[carObj.at(index).head].release();
@@ -102,7 +104,29 @@ double Car::calculateHoldTime(int index){
         return (.5 / CarLength);
     }
 }
-    
+
+//calculate lookahead value
+int Car::calculateLookahead(int index){
+    if(carObj.at(index).speed == 0){
+        return 1;
+    }
+    else if(carObj.at(index).speed == 1){
+        return 1;
+    }
+    else if(carObj.at(index).speed== 2){
+        return 4;
+    }
+    else if(carObj.at(index).speed == 3){
+        return 4;
+    }
+    else if(carObj.at(index).speed == 4){
+        return 6;
+    }
+    else{
+        return 8;
+    }
+}
+
 extern "C" void sim()		// main process
 {
 	create("sim");
