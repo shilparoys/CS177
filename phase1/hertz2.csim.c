@@ -12,7 +12,7 @@ using namespace std;
 //defintions
 #define TINY 1.e-20
 #define CellNum 120
-#define TotalTime 1440
+#define TotalTime 10
 #define CarLength 2
 
 facility_set * road;
@@ -30,6 +30,7 @@ struct Car{
     int travelDistance;
     double hold_time;
     Car():carId(0), head(0), tail(0), speed(0), travelDistance(0), hold_time(0.0){};
+    //initialize a car object
     void createCar(int i){
         i++;        //need to make sure that tail does not become a negative no
         carId = i;
@@ -39,25 +40,48 @@ struct Car{
         travelDistance = 0;
         hold_time = 1;
     }
+
+    //print out info about car
     void snapshot(){
         cout << "Car Information: \n";
         cout << "carId: " << carId << "\thead: " << head << "\t tail:" << tail << endl;
         cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl << endl;
     }
+    
+    //function declaration
     void addCarToTraffic(int index);
     double calculateHoldTime(int index);    
 };
 
 vector<Car> carObj;
+
+//moving the car
 void Car::addCarToTraffic(int index){
     create("addCarToTraffic");
     //non-moving car is added to traffic, so it should reserve 2 cells for head and tail
     (*road)[carObj.at(index).head].reserve();
     (*road)[carObj.at(index).tail].reserve();
-    //calculate hold time for the car for given speed
-    carObj.at(index).hold_time = calculateHoldTime(index);   
+    
+    while(clock < TotalTime){
+        cout << "Trying to move car " << index << endl;
+        //calculate hold time for the car for given speed
+        carObj.at(index).hold_time = calculateHoldTime(index);   
+        //we are going to make the car move
+        //sequences: release the head, reserve head +1, release the tail, reserve tail + 1
+        (*road)[carObj.at(index).head].release();
+        carObj.at(index).head++;
+        (*road)[carObj.at(index).head].reserve();
+
+        hold(carObj.at(index).hold_time);
+        carObj.at(index).travelDistance++;
+
+        (*road)[carObj.at(index).tail].release();
+        carObj.at(index).tail++;
+        (*road)[carObj.at(index).tail].reserve();
+    }
 }
 
+//calculate the hold time
 double Car::calculateHoldTime(int index){
     if(carObj.at(index).speed == 0){
         return 0;
