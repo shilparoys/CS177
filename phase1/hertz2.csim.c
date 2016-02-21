@@ -5,7 +5,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sstream>
+#include <vector>
+
 using namespace std;
 
 //defintions
@@ -14,17 +15,9 @@ using namespace std;
 #define TotalTime 1440
 #define CarLength 2
 
-//variable declarations
-facility_set * road;
-double *D;              //contains departure times
-//function declarations
-void createTraffic();
-void addCar(int startingCell);
-
 //struct for car class
 /*car object will contain information such as 
 id, head, tail, holdtme, etc for each object*/
-
 struct Car{
     public:
     int carId;
@@ -34,28 +27,45 @@ struct Car{
     int travelDistance;
     double hold_time;
     Car():carId(0), head(0), tail(0), speed(0), travelDistance(0), hold_time(0.0){};
+    void createCar(int i){
+        i++;        //need to make sure that tail does not become a negative no
+        carId = i;
+        head = 2* i;
+        tail = 2*i - 1;
+        speed = 1;
+        travelDistance = 0;
+        hold_time = 1;
+    }
+    void snapshot(int i){
+        cout << "Car Information: \n";
+        cout << "carId: " << i << "\thead: " << head << "\t tail:" << tail << endl;
+        cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl;
+    }
 };
+
+//variable declarations
+facility_set * road;
+int numCars = 0;        //number of cars in simulation
+vector<Car> carObj;
 
 extern "C" void sim()		// main process
 {
 	create("sim");
     //initialize
     road = new facility_set("road", CellNum);
-    D = new double[CellNum];
-    for(int i = 0; i < CellNum; i++){
-        D[i] = 0.0;
+    cout << "Please enter number of cars :";
+    cin >> numCars;
+    Car c;
+    //initialize numCars object and make the zombie cars to move
+    for(int i = 0; i < numCars; i++){
+        carObj.push_back(c);
+        carObj.at(i).createCar(i);
+    }    
+    hold(TotalTime);         //wait for a whole day (in minutes) to pass
+    //print out snapshot
+    for(int i = 0; i < numCars; i++){
+        carObj.at(i).snapshot(i);
     }
-    createTraffic();    //start a stream of traffic
-    hold(1440);         //wait for a whole day (in minutes) to pass
-    report();
 }
 
-void createTraffic(){
-    create("createTraffic");
-    addCar(1);          //placing car at position 1 because a stopped car takes 2 cells
-}
-
-void addCar(int startingCell){
-    create("addCar");
-}
 
