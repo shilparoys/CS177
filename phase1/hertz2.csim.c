@@ -36,10 +36,10 @@ struct Car{
         travelDistance = 0;
         hold_time = 1;
     }
-    void snapshot(int i){
+    void snapshot(){
         cout << "Car Information: \n";
-        cout << "carId: " << i << "\thead: " << head << "\t tail:" << tail << endl;
-        cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl;
+        cout << "carId: " << carId << "\thead: " << head << "\t tail:" << tail << endl;
+        cout << "speed: " << speed << "\ttravelDistance: " << travelDistance << "\thold_time: " << hold_time << endl << endl;
     }
 };
 
@@ -53,7 +53,7 @@ extern "C" void sim()		// main process
 	create("sim");
     //initialize
     road = new facility_set("road", CellNum);
-    cout << "Please enter number of cars :";
+    cout << "Please enter number of cars : ";
     cin >> numCars;
     Car c;
     //initialize numCars object and make the zombie cars to move
@@ -64,7 +64,7 @@ extern "C" void sim()		// main process
     hold(TotalTime);         //wait for a whole day (in minutes) to pass
     //print out snapshot
     for(int i = 0; i < numCars; i++){
-        carObj.at(i).snapshot(i);
+        carObj.at(i).snapshot();
     }
 }
 
