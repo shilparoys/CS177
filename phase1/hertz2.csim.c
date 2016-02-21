@@ -8,17 +8,33 @@
 #include <sstream>
 using namespace std;
 
+//defintions
 #define TINY 1.e-20
 #define CellNum 120
+#define TotalTime 1440
+#define CarLength 2
 
 //variable declarations
 facility_set * road;
 double *D;              //contains departure times
-static int driverNum = 0;
-string driverId = "car";
 //function declarations
 void createTraffic();
 void addCar(int startingCell);
+
+//struct for car class
+/*car object will contain information such as 
+id, head, tail, holdtme, etc for each object*/
+
+struct Car{
+    public:
+    int carId;
+    int head;
+    int tail;
+    int speed;
+    int travelDistance;
+    double hold_time;
+    Car():carId(0), head(0), tail(0), speed(0), travelDistance(0), hold_time(0.0){};
+};
 
 extern "C" void sim()		// main process
 {
