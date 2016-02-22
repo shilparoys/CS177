@@ -41,6 +41,14 @@ struct Car{
         hold_time = 1;
     }
 
+    bool empty(){
+        if(carId == 0){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
     //print out info about car
     void snapshot(){
         cout << "Car Information: \n";
@@ -68,6 +76,21 @@ void Car::addCarToTraffic(int index){
         //calculate hold time for the car for given speed
         carObj.at(index).hold_time = calculateHoldTime(index);   
         int lookAhead = calculateLookahead(index);
+        //we are going to do collision avoidance
+        for(int i = 0; i < lookAhead; i++){
+            Car temp = carObj.at(index + 1 + i);
+            if(temp.empty()){
+                cout << "potentional crash\n";
+                if(carObj.at(index).speed -2 < 0){
+                    carObj.at(index).speed = max(0, temp.speed);
+                }
+                else{
+                    carObj.at(index).speed = max(carObj.at(index).speed-2, temp.speed);
+                }
+            }
+    
+        }
+
         //we are going to make the car move
         //sequences: release the head, reserve head +1, release the tail, reserve tail + 1
         (*road)[carObj.at(index).head].release();
