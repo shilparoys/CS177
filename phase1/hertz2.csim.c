@@ -12,11 +12,14 @@ using namespace std;
 //defintions
 #define TINY 1.e-20
 #define CellNum 120
-#define TotalTime 10
+#define TotalTime 100
 #define CarLength 2
 
+//some of the variables
 facility_set * road;
 int numCars = 0;        //number of cars in simulation
+enum TrafficColor {green, yellow, red};
+TrafficColor currentColor = green;
 
 //struct for car class
 /*car object will contain information such as 
@@ -40,7 +43,7 @@ struct Car{
         travelDistance = 0;
         hold_time = 1;
     }
-
+    //check if car object is empty by checking if it ever got initializied 
     bool empty(){
         if(carId == 0){
             return true;
@@ -77,17 +80,18 @@ void Car::addCarToTraffic(int index){
         carObj.at(index).hold_time = calculateHoldTime(index);   
         int lookAhead = calculateLookahead(index);
         //we are going to do collision avoidance
-        for(int i = 0; i < lookAhead; i++){
-            Car temp = carObj.at(index + 1 + i);
-            if(temp.empty()){
-                cout << "potentional crash\n";
+        int temp = index;
+        for(int i = 1; i < lookAhead; i++){
+            if((*road)[carObj.at(temp).head].status() == BUSY){
+                //try to adjust speed
                 if(carObj.at(index).speed -2 < 0){
-                    carObj.at(index).speed = max(0, temp.speed);
+                    carObj.at(index).speed = max(0, carObj.at(index + i).speed);
                 }
                 else{
-                    carObj.at(index).speed = max(carObj.at(index).speed-2, temp.speed);
+                    carObj.at(index).speed = max(carObj.at(index).speed-2, carObj.at(index + i).speed);
                 }
             }
+            temp +=1;
     
         }
 
@@ -104,6 +108,15 @@ void Car::addCarToTraffic(int index){
         carObj.at(index).tail++;
         (*road)[carObj.at(index).tail].reserve();
     }
+    
+    //acceleration
+    //the car can accelerate by one step 
+    if(carObj.at(index).travelDistance % 2 == 0){
+           if(speed < 5){
+                carObj.at(index).speed++;
+            }
+    }
+
 }
 
 //calculate the hold time
@@ -150,6 +163,35 @@ int Car::calculateLookahead(int index){
     }
 }
 
+void traffic_light(){
+    create("traffic_light");
+    //assumption: we start off with a green traffic color
+    while(clock < TotalTime){
+        if(currentColor == green){
+            cout << "It is a green light\n";
+            hold(120);
+            currentColor = yellow;
+            //the pedestrian cannot walk right now
+            (*road)[118].reserve();
+            (*road)[119].reserve();
+        }
+        else if(currentColor == yellow){
+            cout << "It is a yellow light\n";
+            hold(10);
+            currentColor = red;
+        }
+        else if(currentColor == red){
+            cout << "It is a red light\n";
+            hold(uniform(30,90));
+            currentColor = green;
+            //the pedestrians can walk right now
+            (*road)[118].release();
+            (*road)[119].release();
+        }
+    }
+
+
+}
 extern "C" void sim()		// main process
 {
 	create("sim");
@@ -162,6 +204,7 @@ extern "C" void sim()		// main process
     for(int i = 0; i < numCars; i++){
         carObj.push_back(c);
         carObj.at(i).createCar(i);
+        traffic_light();
         carObj.at(i).addCarToTraffic(i);
     }    
     hold(TotalTime);         //wait for a whole day (in minutes) to pass
